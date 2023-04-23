@@ -1,0 +1,20 @@
+{
+  "name": "kochzhao",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node-dev ./src/main.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.15.13"
+  },
+  "dependencies": {
+    "jimp": "^0.22.7",
+    "jpeg-js": "^0.4.4",
+    "ts-node-dev": "^2.0.0"
+  }
+}
