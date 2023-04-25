@@ -1,3 +1,6 @@
+import { Image } from 'canvas';
+import { loadImage } from 'canvas';
+import { createCanvas } from 'canvas';
 import { convertTextToBinary, dividePixels, flatBlocked, getRedChannel, imageToBlock, mergePixels, toMatrix, toRGB, toYCbCrModel, useDCTtoBlocks, useIDCTtoBlocks, } from "./common";
 const fs = require('fs');
 const jpeg = require('jpeg-js');
@@ -7,13 +10,18 @@ const N = 8, Pr = 15;
 export const encodeKochZhao = (inputMessage: string, pathImage: any) => {
   const inputBinary = convertTextToBinary(inputMessage);
 
-  const jpegData = fs.readFileSync(pathImage);
-  const rawImageData = jpeg.decode(jpegData, {useTArray: true}); // return as Uint8Array
-  const unit8Array = rawImageData.data;
-  
-  const width = rawImageData.width;
-  const height = rawImageData.height;
-  const divided = dividePixels(unit8Array);
+  loadImage(pathImage).then((imageData: Image) => {
+    const canvas = createCanvas(imageData.width, imageData.height);
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(imageData, 0, 0);
+    const image = ctx.getImageData(0, 0, imageData.width, imageData.height);
+    const unit8Array = image.data;
+
+    const width = imageData.width;
+    const height = imageData.height;
+
+    const divided = dividePixels(unit8Array as any);
   
   const YCbCr = toYCbCrModel(divided);
  
@@ -60,9 +68,10 @@ export const encodeKochZhao = (inputMessage: string, pathImage: any) => {
   let div = dividePixels(merged);
   let backToRGB = toRGB(div);
   let backToRGBarr = mergePixels(backToRGB);
-  Jimp.create(width, height, (err: any, image: any) => {
-    if (err) throw err;
-    image.bitmap.data = Buffer.from(backToRGBarr);
-    image.write('src/image/output.jpg');
-  });
+  image.data.set(backToRGBarr);
+    ctx.putImageData(image, 0, 0);
+    const buffer = canvas.toBuffer();
+    fs.writeFileSync("src/image/output.jpg", buffer);
+  })
+
 }
