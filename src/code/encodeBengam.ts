@@ -106,6 +106,6 @@ export const encodeBengam = async (inputMessage: string, pathImage: any) => {
     image.data.set(backToRGBarr);
     ctx.putImageData(image, 0, 0);
     const buffer = canvas.toBuffer();
-    fs.writeFileSync("src/image/output.jpg", buffer);
+    fs.writeFileSync("src/image/output.png", buffer);
   });
 };

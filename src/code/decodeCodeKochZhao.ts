@@ -1,25 +1,38 @@
+
+import { Image } from 'canvas';
+import { loadImage } from 'canvas';
+import { createCanvas } from 'canvas';
 import { convertBinaryToText, dividePixels, getRedChannel, imageToBlock, mergePixels, toMatrix, toYCbCrModel, useDCTtoBlocks } from "./common";
 const fs = require('fs');
 const jpeg = require('jpeg-js');
 const Jimp = require('jimp');
-
 const N = 8;
 
 export const decodeKochZhao = (pathImage: any) => {
-  const jpegData = fs.readFileSync(pathImage);
-  const rawImageData = jpeg.decode(jpegData, {useTArray: true}); // return as Uint8Array
-  const unit8Array = rawImageData.data;
+  loadImage(pathImage).then((imageData: Image) => {
+    const canvas = createCanvas(imageData.width, imageData.height);
+    const ctx = canvas.getContext("2d");
 
-  const width = rawImageData.width;
-  const height = rawImageData.height;
+    ctx.drawImage(imageData, 0, 0);
+    const image = ctx.getImageData(0, 0, imageData.width, imageData.height);
+    const unit8Array = image.data;
 
-  let divided = dividePixels(unit8Array);
+    const width = imageData.width;
+    const height = imageData.height;
+
+    let divided = dividePixels(unit8Array as any);
+
   let YCbCr = toYCbCrModel(divided); //RGB to YCbCr transform
+
   let merged = mergePixels(YCbCr);
   let Ychannel = getRedChannel(merged);
+
   let YchannelMatrix = toMatrix(Ychannel, width, height);
+
   let blockedImage = imageToBlock(YchannelMatrix, width, height);
+
   let blockedImageWithDCT = useDCTtoBlocks(blockedImage, width, height);
+  
   let mess = [] as String[];
     let i1 = parseInt((N / 3).toString()), i2 = i1 + i1;
     for (let i = 0; i < blockedImageWithDCT.length; i++) {
@@ -33,4 +46,6 @@ export const decodeKochZhao = (pathImage: any) => {
     }
   const results = convertBinaryToText(mess.join(''))
   console.log(results)
+  })
+
 }
